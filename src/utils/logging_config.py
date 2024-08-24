@@ -23,3 +23,21 @@ def get_logger(name):
     if not logging.getLogger().handlers:
         setup_logging()
     return logging.getLogger(name)
+
+
+# Usage example:
+# from utils.logging_config import get_logger
+# 
+# # In your module (e.g., census_api_client.py):
+# logger = get_logger(__name__)
+# 
+# def some_function():
+#     logger.debug("This is a debug message")
+#     logger.info("This is an info message")
+#     logger.warning("This is a warning message")
+#     logger.error("This is an error message")
+#     try:
+#         # Some operation that might raise an exception
+#         raise ValueError("Example exception")
+#     except Exception as e:
+#         logger.exception("An error occurred: %s", str(e))
