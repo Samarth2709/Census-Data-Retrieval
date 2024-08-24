@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Census Data Retrieval Tool is a Python-based application designed to simplify the process of gathering and analyzing US city census data. This tool is particularly useful for commercial real estate investors and researchers who need quick access to structured, relevant census information.
+The Census Data Retrieval Tool is a Python-based application designed to simplify the process of gathering and analyzing US city census data. This tool is created for LLMs to gain access to a particular census dataset for a city. 
 
 ## Features
 
@@ -18,7 +18,7 @@ The Census Data Retrieval Tool is a Python-based application designed to simplif
 ### Prerequisites
 
 - Python 3.7 or higher
-- pip (Python package installer)
+- pip
 
 ### Installation
 
