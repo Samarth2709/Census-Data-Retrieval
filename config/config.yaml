@@ -1,0 +1,20 @@
+# Census Data Retrieval Tool Configuration
+
+# API Configuration
+api:
+  key: ${CENSUS_API_KEY}  # This will be loaded from the .env file
+
+# Data Retrieval Settings
+data_retrieval:
+  default_year: 2022
+  max_years_per_query: 3
+
+# Output Configuration
+output:
+  directory: "./data/processed"
+  file_naming: "census_data_{city}_{year}.md"
+
+# Error Handling and Retry Settings
+error_handling:
+  max_retries: 3
+  retry_delay: 5  # seconds

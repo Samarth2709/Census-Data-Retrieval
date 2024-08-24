@@ -1,0 +1,38 @@
+version: 1
+disable_existing_loggers: False
+
+formatters:
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  detailed:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: simple
+    stream: ext://sys.stdout
+
+  file:
+    class: logging.FileHandler
+    level: DEBUG
+    formatter: detailed
+    filename: './logs/census_data_tool.log'
+    encoding: utf8
+
+loggers:
+  '':  # root logger
+    level: DEBUG
+    handlers: [console, file]
+    propagate: no
+
+  census_data_retrieval_tool:
+    level: DEBUG
+    handlers: [console, file]
+    propagate: no
+
+  census_api_client:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
