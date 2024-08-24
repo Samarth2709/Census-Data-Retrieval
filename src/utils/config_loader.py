@@ -34,7 +34,7 @@ def load_configuration() -> Configuration:
 config = load_configuration()
 
 # Usage example:
-# from src.utils.config_loader import config
+# from utils.config_loader import config
 # api_key = config.get('api.key')
 # default_year = config.get('data_retrieval.default_year')
 # output_directory = config.get('output.directory')
