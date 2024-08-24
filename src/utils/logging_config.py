@@ -5,10 +5,21 @@ import os
 
 def setup_logging():
     """Set up logging configuration"""
-    config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'logging.yaml')
+    # Get the path to the project root directory
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    
+    config_path = os.path.join(project_root, 'config', 'logging.yaml')
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f.read())
-        logging.config.dictConfig(config)
+    
+    # Set the log file path
+    log_file_path = os.path.join(project_root, 'data', 'census_data_tool.log')
+    config['handlers']['file']['filename'] = log_file_path
+    
+    # Ensure the data directory exists
+    os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+    
+    logging.config.dictConfig(config)
 
 def get_logger(name):
     """
@@ -23,8 +34,6 @@ def get_logger(name):
     if not logging.getLogger().handlers:
         setup_logging()
     return logging.getLogger(name)
-
-
 # Usage example:
 # from utils.logging_config import get_logger
 # 
