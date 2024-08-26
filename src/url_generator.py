@@ -45,8 +45,8 @@ class URLGenerator:
         url = api_url.replace('[year]', str(year))
         api_key = config.get('api.key')
         if not api_key:
-            logger.error("API key not found in configuration")
-            raise ValueError("API key not found in configuration")
+            logger.warning("API key not found in configuration. URL will not contain an API key.")
+            return url
         
         url += f"&key={urllib.parse.quote(api_key)}"
 
