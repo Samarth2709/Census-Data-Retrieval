@@ -1,187 +1,171 @@
 import re
+from typing import List, Optional
 from datetime import datetime
-from typing import List, Tuple
-from urllib.parse import urlparse, parse_qs
-
-from utils.config_loader import config
 from utils.logging_config import get_logger
+from utils.config_loader import config
 
 logger = get_logger(__name__)
 
-class InputValidationError(Exception):
-    """Custom exception for input validation errors."""
-    pass
-
-def validate_api_url(url: str) -> bool:
+def validate_url(url: str) -> bool:
     """
-    Validate the Census API URL format.
-    
+    Validate if the given URL is a valid Census API URL.
+
     Args:
-        url (str): The API URL to validate.
-    
+        url (str): The URL to validate.
+
     Returns:
         bool: True if the URL is valid, False otherwise.
     """
+    if not url or not url.strip():
+        logger.error("Empty or whitespace-only URL provided")
+        return False
+    
     pattern = r'^https://api\.census\.gov/data/\d{4}/.*$'
-    return bool(re.match(pattern, url))
+    is_valid = bool(re.match(pattern, url))
+    if not is_valid:
+        logger.error(f"Invalid URL format: {url}")
+    return is_valid
 
-def parse_api_url(url: str) -> dict:
+def validate_years(years: List[int]) -> bool:
     """
-    Parse the Census API URL and extract key components.
-    
-    Args:
-        url (str): The API URL to parse.
-    
-    Returns:
-        dict: A dictionary containing the parsed components.
-    """
-    parsed_url = urlparse(url)
-    path_components = parsed_url.path.split('/')
-    query_params = parse_qs(parsed_url.query)
-    
-    return {
-        'year': path_components[3],
-        'dataset': '/'.join(path_components[4:]),
-        'variables': query_params.get('get', []),
-        'geography': query_params.get('for', [])
-    }
+    Validate if the given years are valid for Census API queries.
 
-def validate_year_range(start_year: int, end_year: int) -> Tuple[int, int]:
-    """
-    Validate the provided year range.
-    
     Args:
-        start_year (int): The start year.
-        end_year (int): The end year.
-    
+        years (List[int]): List of years to validate.
+
     Returns:
-        Tuple[int, int]: The validated start and end years.
-    
-    Raises:
-        InputValidationError: If the year range is invalid.
+        bool: True if all years are valid, False otherwise.
     """
+    # Check if years is empty or None
+    if years is None or len(years) == 0:
+        logger.warn("No years provided to validate.") 
+    
     current_year = datetime.now().year
-    max_years = config.get('data_retrieval.max_years_per_query', 3)
-    
-    if start_year > end_year:
-        raise InputValidationError("Start year must be less than or equal to end year.")
-    
-    if end_year > current_year:
-        raise InputValidationError(f"End year cannot be in the future. Current year: {current_year}")
-    
-    if end_year - start_year + 1 > max_years:
-        raise InputValidationError(f"Year range cannot exceed {max_years} years.")
-    
-    return start_year, end_year
+    min_year = config.get('data_retrieval.min_year', 1790)
+    is_valid = all(min_year <= year <= current_year for year in years)
+    if not is_valid:
+        logger.error(f"Invalid years: {years}. Years must be between {min_year} and {current_year}")
+    return is_valid
 
-def generate_urls(base_url: str, start_year: int, end_year: int) -> List[str]:
+# Get year from URL
+def get_year_from_url(base_url: str) -> int:
     """
-    Generate URLs for different years based on the parsed components.
-    
+    Extract the year from the given URL.
+
     Args:
-        base_url (str): The base API URL.
-        start_year (int): The start year.
-        end_year (int): The end year.
-    
+        base_url (str): The URL to extract the year from.
+
     Returns:
-        List[str]: A list of generated URLs for each year in the range.
+        int: The extracted year.
     """
-    parsed_components = parse_api_url(base_url)
+    # Extract the year from the base URL
+    base_year_match = re.search(r'/data/(\d{4})/', base_url)
+    if not base_year_match:
+        logger.error(f"Could not extract year from base URL: {base_url}")
+        raise ValueError("Could not extract year from base URL")
+    base_year = base_year_match.group(1)
+    return int(base_year)
+
+def generate_urls(base_url: str, years: Optional[List[int]] = None) -> List[str]:
+    """
+    Generate URLs for the given years based on the base URL.
+    If no years are provided, return the base URL as is.
+    If the number of years exceeds the maximum allowed, use only the most recent years up to the maximum.
+
+    Args:
+        base_url (str): The base URL to use as a template.
+        years (Optional[List[int]]): List of years to generate URLs for. Defaults to None.
+
+    Returns:
+        List[str]: List of generated URLs.
+    """
+    logger.info(f"Generating URLs for base_url: {base_url} and years: {years}")
+    
+    if not validate_url(base_url):
+        logger.error(f"Invalid base URL provided: {base_url}")
+        raise ValueError("Invalid base URL provided")
+
+    if years is None or len(years) == 0:
+        logger.info("No years provided. Returning base URL.")
+        return [base_url]
+
+    if not validate_years(years):
+        logger.error(f"Invalid years provided: {years}")
+        raise ValueError("Invalid years provided")
+    
+    # Limit the number of years to the maximum allowed
+    max_years = config.get('data_retrieval.max_years_per_query', 3) # Maximum number of years allowed per query, if not specified in config use default value (3)
+    if len(years) > max_years:
+        logger.warning(f"Number of years ({len(years)}) exceeds maximum allowed ({max_years}). Using only the most recent {max_years} years.")
+        years = sorted(years, reverse=True)[:max_years]
+
+    base_year = get_year_from_url(base_url)
+
+    # Generate new URLs by replacing the year
     urls = []
-    
-    for year in range(start_year, end_year + 1):
-        new_url = f"https://api.census.gov/data/{year}/{parsed_components['dataset']}?get={','.join(parsed_components['variables'])}&for={','.join(parsed_components['geography'])}"
+    for year in years:
+        new_url = base_url.replace(f"/data/{base_year}/", f"/data/{year}/")
         urls.append(new_url)
-    
+
+    logger.info(f"Generated {len(urls)} URLs")
     return urls
 
-def process_user_input(api_url: str, start_year: int, end_year: int) -> List[str]:
-    """
-    Process and validate user input, then generate appropriate URLs.
+# Example usage
+if __name__ == "__main__":
+    # Example usage for validate_url function
+    print("Testing validate_url function:")
+    test_urls = [
+        "https://api.census.gov/data/2022/acs/acs5/subject?get=group(S2503)&ucgid=1600000US1743250",
+        "https://api.census.gov/data/2023/acs/acs5/subject?get=group(S2503)&ucgid=1600000US1743250",
+        "https://api.census.gov/data/invalid/acs/acs5/subject?get=group(S2503)&ucgid=1600000US1743250",
+        "https://example.com/invalid-url"
+    ]
+    for url in test_urls:
+        print(f"URL: {url}")
+        print(f"Is valid: {validate_url(url)}")
+        print()
+
+    # Example usage for validate_years function
+    print("Testing validate_years function:")
+    test_year_sets = [
+        [2020, 2021, 2022],
+        [1900, 1950, 2000],
+        [2022, 2023, 2024],
+        [1700, 1800, 1900]
+    ]
+    for years in test_year_sets:
+        print(f"Years: {years}")
+        print(f"Are valid: {validate_years(years)}")
+        print()
+
+    # Example usage for generate_urls function
+    base_url = "https://api.census.gov/data/2022/acs/acs5/subject?get=group(S2503)&ucgid=1600000US1743250"
     
-    Args:
-        api_url (str): The Census API URL provided by the user.
-        start_year (int): The start year for data retrieval.
-        end_year (int): The end year for data retrieval.
-    
-    Returns:
-        List[str]: A list of generated URLs for each year in the validated range.
-    
-    Raises:
-        InputValidationError: If any input validation fails.
-    """
-    if not validate_api_url(api_url):
-        raise InputValidationError("Invalid Census API URL format.")
-    
-    start_year, end_year = validate_year_range(start_year, end_year)
-    
-    urls = generate_urls(api_url, start_year, end_year)
-    
-    logger.info(f"Generated {len(urls)} URLs for years {start_year}-{end_year}")
-    return urls
+    # Test with years provided (within max limit)
+    years = [2020, 2021, 2022]
+    try:
+        generated_urls = generate_urls(base_url, years)
+        logger.info("Generated URLs with years (within max limit):")
+        for url in generated_urls:
+            logger.info(url)
+    except ValueError as e:
+        logger.error(f"Error generating URLs: {str(e)}")
 
-# Usage examples:
+    # Test with years provided (exceeding max limit)
+    years = [2018, 2019, 2020, 2021, 2022]
+    try:
+        generated_urls = generate_urls(base_url, years)
+        logger.info("Generated URLs with years (exceeding max limit):")
+        for url in generated_urls:
+            logger.info(url)
+    except ValueError as e:
+        logger.error(f"Error generating URLs: {str(e)}")
 
-# Example URL
-example_url = "https://api.census.gov/data/2022/acs/acs5/subject?get=group(S1901)&ucgid=1600000US1743250"
-
-# 1. Validate API URL
-print(f"Is URL valid? {validate_api_url(example_url)}")  # Should print: Is URL valid? True
-
-# 2. Parse API URL
-parsed_url = parse_api_url(example_url)
-print("Parsed URL components:")
-print(f"Year: {parsed_url['year']}")
-print(f"Dataset: {parsed_url['dataset']}")
-print(f"Variables: {parsed_url['variables']}")
-print(f"Geography: {parsed_url['geography']}")
-
-# 3. Validate year range
-try:
-    validated_years = validate_year_range(2020, 2022)
-    print(f"Validated year range: {validated_years}")
-except InputValidationError as e:
-    print(f"Year validation error: {str(e)}")
-
-# 4. Generate URLs
-generated_urls = generate_urls(example_url, 2020, 2022)
-print("Generated URLs:")
-for url in generated_urls:
-    print(url)
-
-# 5. Process user input (main function)
-try:
-    final_urls = process_user_input(example_url, 2020, 2022)
-    print("Final processed URLs:")
-    for url in final_urls:
-        print(url)
-except InputValidationError as e:
-    print(f"Input processing error: {str(e)}")
-
-# 6. Error handling examples
-print("\nError handling examples:")
-
-# Invalid URL
-try:
-    process_user_input("https://invalid-url.com", 2020, 2022)
-except InputValidationError as e:
-    print(f"Invalid URL error: {str(e)}")
-
-# Invalid year range
-try:
-    process_user_input(example_url, 2022, 2020)
-except InputValidationError as e:
-    print(f"Invalid year range error: {str(e)}")
-
-# Year range exceeding maximum
-try:
-    process_user_input(example_url, 2018, 2022)
-except InputValidationError as e:
-    print(f"Excessive year range error: {str(e)}")
-
-# Future year
-current_year = datetime.now().year
-try:
-    process_user_input(example_url, current_year, current_year + 1)
-except InputValidationError as e:
-    print(f"Future year error: {str(e)}")
+    # Test without years provided
+    try:
+        generated_urls = generate_urls(base_url)
+        logger.info("Generated URLs without years:")
+        for url in generated_urls:
+            logger.info(url)
+    except ValueError as e:
+        logger.error(f"Error generating URLs: {str(e)}")
