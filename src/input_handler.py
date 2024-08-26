@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional
+from typing import List, Optional, Union
 from datetime import datetime
 from utils.logging_config import get_logger
 from utils.config_loader import config
@@ -38,7 +38,8 @@ def validate_years(years: List[int]) -> bool:
     """
     # Check if years is empty or None
     if years is None or len(years) == 0:
-        logger.warn("No years provided to validate.") 
+        logger.warn("No years provided to validate.")
+        return False
     
     current_year = datetime.now().year
     min_year = config.get('data_retrieval.min_year', 1790)
@@ -66,7 +67,23 @@ def get_year_from_url(base_url: str) -> int:
     base_year = base_year_match.group(1)
     return int(base_year)
 
-def generate_urls(base_url: str, years: Optional[List[int]] = None) -> List[str]:
+def limit_years(years: List[int], max_years: int) -> List[int]:
+    """
+    Limit the number of years in the list to the maximum allowed.
+
+    Args:
+        years (List[int]): The years queried about for Census data.
+        max_years (int): The maximum number of years allowed to query about.
+
+    Returns:
+        List[int]: The limited list of years.
+    """
+    if len(years) > max_years:
+        logger.warning(f"Number of years ({len(years)}) exceeds maximum allowed ({max_years}). Using only the most recent {max_years} years.")
+        return sorted(years, reverse=True)[:max_years]
+    return years
+
+def generate_urls(base_url: str, years: Union[List[int], None] = None) -> List[str]:
     """
     Generate URLs for the given years based on the base URL.
     If no years are provided, return the base URL as is.
@@ -95,9 +112,7 @@ def generate_urls(base_url: str, years: Optional[List[int]] = None) -> List[str]
     
     # Limit the number of years to the maximum allowed
     max_years = config.get('data_retrieval.max_years_per_query', 3) # Maximum number of years allowed per query, if not specified in config use default value (3)
-    if len(years) > max_years:
-        logger.warning(f"Number of years ({len(years)}) exceeds maximum allowed ({max_years}). Using only the most recent {max_years} years.")
-        years = sorted(years, reverse=True)[:max_years]
+    years = limit_years(years, max_years) # Limit the number of years to the maximum allowed
 
     base_year = get_year_from_url(base_url)
 
