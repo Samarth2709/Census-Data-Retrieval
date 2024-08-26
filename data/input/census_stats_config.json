@@ -1,0 +1,16 @@
+{
+    "statistics": [
+      {
+        "name": "Population",
+        "description": "Total population count",
+        "api_url": "https://api.census.gov/data/[year]/acs/acs5?get=B01003_001E&for=place:*&in=state:06",
+        "years": [2019, 2020, 2021]
+      },
+      {
+        "name": "Median Income",
+        "description": "Median household income",
+        "api_url": "https://api.census.gov/data/[year]/acs/acs5?get=B19013_001E&for=place:*&in=state:06",
+        "years": [2018, 2019, 2020]
+      }
+    ]
+  }
