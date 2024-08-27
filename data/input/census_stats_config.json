@@ -3,13 +3,38 @@
       {
         "name": "Population",
         "description": "Total population count",
-        "api_url": "https://api.census.gov/data/[year]/acs/acs5?get=B01003_001E&for=place:*&in=state:06",
-        "years": [2019, 2020, 2021]
+        "api_url": "https://api.census.gov/data/[year]/dec/pl?get=P1_001N&ucgid=1600000US1743250", 
+        "_comment": "API URL must have [year] placeholder for the year",
+        "years": [2018, 2019, 2020]
       },
       {
         "name": "Median Income",
         "description": "Median household income",
-        "api_url": "https://api.census.gov/data/[year]/acs/acs5?get=B19013_001E&for=place:*&in=state:06",
+        "api_url": "https://api.census.gov/data/[year]/acs/acs5/subject?get=S1901_C01_012E&ucgid=1600000US1743250",
+        "years": [2018, 2019, 2020]
+      },
+      {
+        "name": "Mean Income",
+        "description": "Mean household income",
+        "api_url": "https://api.census.gov/data/[year]/acs/acs5/subject?get=S1901_C01_013E&ucgid=1600000US1743250",
+        "years": [2018, 2019, 2020]
+      },
+      {
+        "name": "Occupied Housing Units Percentage",
+        "description": "Percentage of occupied housing units out of total housing units.",
+        "api_url": "https://api.census.gov/data/[year]/acs/acs5/profile?get=DP04_0002PE&ucgid=1600000US1743250",
+        "years": [2018, 2019, 2020]
+      },
+      {
+        "name": "Vacant Housing Units Percentage",
+        "description": "Percentage of vacant housing units out of total housing units.",
+        "api_url": "https://api.census.gov/data/[year]/acs/acs5/profile?get=DP04_0003PE&ucgid=1600000US1743250",
+        "years": [2018, 2019, 2020]
+      },
+      {
+        "name": "Median Rent",
+        "description": "Median rent paid for occupied units.",
+        "api_url": "https://api.census.gov/data/[year]/acs/acs5/profile?get=DP04_0134E&ucgid=1600000US1743250",
         "years": [2018, 2019, 2020]
       }
     ]
