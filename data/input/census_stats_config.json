@@ -5,7 +5,8 @@
         "description": "Total population count",
         "api_url": "https://api.census.gov/data/[year]/dec/pl?get=P1_001N&ucgid=1600000US1743250", 
         "_comment": "API URL must have [year] placeholder for the year",
-        "years": [2018, 2019, 2020]
+        "years": [2010, 2020],
+        "cell_number": "P001001"
       },
       {
         "name": "Median Income",
