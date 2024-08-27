@@ -130,8 +130,6 @@ class URLGenerator:
             urls: A dictionary with statistic names as keys, containing nested dictionaries
                   with years as keys, each containing a dictionary with 'primary' and optionally 'backup' URLs.
         """
-        print(json.dumps(urls, indent=2))
-        print("\n" * 5)
         for stat_name, years in urls.items():
             print(f"\n{stat_name}:")
             for year, url_types in years.items():
@@ -159,6 +157,7 @@ if __name__ == "__main__":
     # Generate URLs
     generated_urls = url_generator.generate_urls()
     print(generated_urls)
+    print("\n"*3)
 
     # Print generated URLs using the print_urls function
     print("\nGenerated URLs:")
