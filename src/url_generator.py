@@ -63,6 +63,18 @@ class URLGenerator:
             The encoded URL as a string.
         """
         return urllib.parse.quote(url, safe=':/?&=')
+    
+    def print_urls(self, urls: Dict[str, Dict[int, str]]) -> None:
+        """
+        Print each URL along with its statistic name and year.
+        
+        Args:
+            urls: A dictionary with statistic names as keys, containing nested dictionaries
+                  with years as keys and URLs as values.
+        """
+        for stat_name, years in urls.items():
+            for year, url in years.items():
+                print(f"{stat_name} {year}: {url}")
 
 # Usage example
 if __name__ == "__main__":
