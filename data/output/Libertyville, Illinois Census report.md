@@ -4,12 +4,6 @@
 
 1. [List Format](#list-format)
 2. [Table Format](#table-format)
-   - [Population](###population)
-   - [Median Income](###median-income)
-   - [Mean Income](###mean-income)
-   - [Occupied Housing Units Percentage](###occupied-housing-units-percentage)
-   - [Vacant Housing Units Percentage](###vacant-housing-units-percentage)
-   - [Median Rent](###median-rent)
 
 ## List Format
 
