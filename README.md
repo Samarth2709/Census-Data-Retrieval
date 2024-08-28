@@ -65,7 +65,8 @@ To install and run the Census Data Retrieval Tool, follow these steps:
            "api_url": "https://api.census.gov/data/[year]/acs/acs5?get=B19013_001E&for=place:*&in=state:06",
            "years": [2018, 2019, 2020]
          }
-       ]
+       ],
+     "location": "Libertyville, Illinois"
      }
      ```
    - Each statistic in the "statistics" array should include:
