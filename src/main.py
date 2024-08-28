@@ -27,7 +27,7 @@ async def main():
 
         # Generate markdown
         formatter = MarkdownFormatter(results)
-        output_path = os.path.join(current_dir, "data", "output", "census_data_report.md")
+        output_path = os.path.join(current_dir, "..", "data", "output", "census_data_report.md")
         formatter.save_markdown(output_path)
     except Exception as e:
         print(f"\nAn error occurred: {str(e)}")
