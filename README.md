@@ -96,7 +96,8 @@ The tool supports the use of backup URLs for each statistic. To include a backup
          "years": [2019, 2020, 2021],
          "cell_number": "B01003_001E"
        }
-     ]
+     ],
+     "location": "Libertyville, Illinois"
    }
    ```
 
