@@ -43,8 +43,6 @@ To install and run the Census Data Retrieval Tool, follow these steps:
      CENSUS_API_KEY=your_api_key_here
      ```
 
-   **Note:** Make sure to keep your API key confidential and never commit it to version control.
-
 ## How to Use the Project
 
 1. Prepare your input JSON file:
