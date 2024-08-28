@@ -20,7 +20,7 @@ class MarkdownFormatter:
         self.data = data
         logger.info("MarkdownFormatter initialized with data")
 
-    def generate_markdown(self) -> str:
+    def generate_markdown(self, show_variable_key) -> str:
         """
         Generate the complete markdown content including table of contents,
         list format, and table format representations of the census data.
@@ -31,8 +31,8 @@ class MarkdownFormatter:
         try:
             markdown = "# Census Data Report\n\n"
             markdown += self._generate_toc()
-            markdown += self._generate_list_format()
-            markdown += self._generate_table_format()
+            markdown += self._generate_list_format(show_variable_key)
+            markdown += self._generate_table_format(show_variable_key)
             logger.info("Markdown content generated successfully")
             return markdown
         except Exception as e:
@@ -53,7 +53,7 @@ class MarkdownFormatter:
             toc += f"   - [{statistic}](###{statistic.lower().replace(' ', '-')})\n"
         return toc + "\n"
 
-    def _generate_list_format(self) -> str:
+    def _generate_list_format(self, show_variable_key) -> str:
         """
         Generate a list format representation of the census data.
         
@@ -65,11 +65,14 @@ class MarkdownFormatter:
         for statistic, years_data in self.data.items():
             list_format += f"### {statistic}\n\n"
             for year, data in years_data.items():
-                list_format += f"- {year}: {data[0]} ({data[1]})\n"
+                if show_variable_key:
+                    list_format += f"- {year}: {data[0]} ({data[1]})\n"
+                else:
+                    list_format += f"- {year}: {data[0]}\n"
             list_format += "\n"
         return list_format
 
-    def _generate_table_format(self) -> str:
+    def _generate_table_format(self, show_variable_key) -> str:
         """
         Generate a table format representation of the census data.
         
@@ -79,14 +82,20 @@ class MarkdownFormatter:
         table_format = "## Table Format\n\n"
         for statistic, years_data in self.data.items():
             table_format += f"### {statistic}\n\n"
-            table_format += "| Year | Value | Identifier |\n"
-            table_format += "|------|-------|------------|\n"
-            for year, data in sorted(years_data.items()):
-                table_format += f"| {year} | {data[0]} | {data[1]} |\n"
+            if show_variable_key:
+                table_format += "| Year | Value | Identifier |\n"
+                table_format += "|------|-------|------------|\n"
+                for year, data in sorted(years_data.items()):
+                    table_format += f"| {year} | {data[0]} | {data[1]} |\n"
+            else:
+                table_format += "| Year | Value |\n"
+                table_format += "|------|-------|\n"
+                for year, data in sorted(years_data.items()):
+                    table_format += f"| {year} | {data[0]} |\n"
             table_format += "\n"
         return table_format
     
-    def save_markdown(self, filename: str):
+    def save_markdown(self, filename: str, show_variable_key = True):
         """
         Save the generated markdown content to a file.
         
@@ -96,9 +105,13 @@ class MarkdownFormatter:
         try:
             # Create the directory if it doesn't exist
             os.makedirs(os.path.dirname(filename), exist_ok=True)
-            
+            if show_variable_key:
+                logger.info("Variable keys will be shown in the markdown")
+            else:
+                logger.info("Variable keys will not be shown in the markdown")
+
             with open(filename, 'w') as f:
-                f.write(self.generate_markdown())
+                f.write(self.generate_markdown(show_variable_key=show_variable_key))
             logger.info(f"Markdown file saved successfully: {filename}")
         except IOError as e:
             logger.error(f"IOError while saving markdown file: {str(e)}")

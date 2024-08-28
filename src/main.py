@@ -16,6 +16,7 @@ async def main():
         # Parse input
         input_parser = InputParser(json_path)
         statistics = input_parser.get_statistics()
+        location_name = input_parser.get_location()
 
         # Generate URLs
         url_generator = URLGenerator(statistics)
@@ -27,8 +28,8 @@ async def main():
 
         # Generate markdown
         formatter = MarkdownFormatter(results)
-        output_path = os.path.join(current_dir, "..", "data", "output", "census_data_report.md")
-        formatter.save_markdown(output_path)
+        output_path = os.path.join(current_dir, "..", "data", "output", f"{location_name} Census report.md")
+        formatter.save_markdown(output_path, show_variable_key=False) # Set to True to show variable keys
     except Exception as e:
         print(f"\nAn error occurred: {str(e)}")
 
