@@ -5,7 +5,7 @@ import asyncio
 from utils.logging_config import get_logger
 from input_parser import InputParser
 from url_generator import URLGenerator
-from src.census_api_client import CensusAPIClient
+from census_api_client import CensusAPIClient
 
 
 logger = get_logger(__name__)
