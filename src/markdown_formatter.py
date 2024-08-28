@@ -1,0 +1,106 @@
+import json
+from typing import Dict, Any, List
+import os
+import asyncio
+from utils.logging_config import get_logger
+from input_parser import InputParser
+from url_generator import URLGenerator
+from src.census_api_client import CensusAPIClient
+
+
+logger = get_logger(__name__)
+
+class MarkdownFormatter:
+    def __init__(self, data: Dict[str, Dict[int, List[Any]]]):
+        self.data = data
+        logger.info("MarkdownFormatter initialized with data")
+
+    def generate_markdown(self) -> str:
+        logger.info("Generating markdown content")
+        try:
+            markdown = "# Census Data Report\n\n"
+            markdown += self._generate_toc()
+            markdown += self._generate_list_format()
+            markdown += self._generate_table_format()
+            logger.info("Markdown content generated successfully")
+            return markdown
+        except Exception as e:
+            logger.error(f"Error generating markdown content: {str(e)}")
+            raise
+
+    def _generate_toc(self) -> str:
+        logger.debug("Generating table of contents")
+        toc = "## Table of Contents\n\n"
+        toc += "1. [List Format](#list-format)\n"
+        toc += "2. [Table Format](#table-format)\n"
+        for statistic in self.data.keys():
+            toc += f"   - [{statistic}](###{statistic.lower().replace(' ', '-')})\n"
+        return toc + "\n"
+
+    def _generate_list_format(self) -> str:
+        logger.debug("Generating list format")
+        list_format = "## List Format\n\n"
+        for statistic, years_data in self.data.items():
+            list_format += f"### {statistic}\n\n"
+            for year, data in years_data.items():
+                list_format += f"- {year}: {data[0]} ({data[1]})\n"
+            list_format += "\n"
+        return list_format
+
+    def _generate_table_format(self) -> str:
+        logger.debug("Generating table format")
+        table_format = "## Table Format\n\n"
+        for statistic, years_data in self.data.items():
+            table_format += f"### {statistic}\n\n"
+            table_format += "| Year | Value | Identifier |\n"
+            table_format += "|------|-------|------------|\n"
+            for year, data in sorted(years_data.items()):
+                table_format += f"| {year} | {data[0]} | {data[1]} |\n"
+            table_format += "\n"
+        return table_format
+    
+    def save_markdown(self, filename: str):
+        logger.info(f"Saving markdown to file: {filename}")
+        try:
+            # Create the directory if it doesn't exist
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            
+            with open(filename, 'w') as f:
+                f.write(self.generate_markdown())
+            logger.info(f"Markdown file saved successfully: {filename}")
+        except IOError as e:
+            logger.error(f"IOError while saving markdown file: {str(e)}")
+            quit(1)
+        except Exception as e:
+            logger.error(f"Unexpected error while saving markdown file: {str(e)}")
+            quit(1)
+
+# Comprehensive example usage
+async def main():
+    # Get the directory of the current script
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Construct the path to the JSON file
+    json_path = os.path.join(current_dir, "..", "data", "input", "census_stats_config.json")
+
+    # Parse input
+    input_parser = InputParser(json_path)
+    statistics = input_parser.get_statistics()
+
+    # Generate URLs
+    url_generator = URLGenerator(statistics)
+    urls = url_generator.generate_urls()
+
+    # Fetch data
+    client = CensusAPIClient()
+    results = await client.fetch_data(urls)
+
+    # Generate markdown
+    formatter = MarkdownFormatter(results)
+    output_path = os.path.join(current_dir, "..", "data", "output", "census_data_report.md")
+    formatter.save_markdown(output_path)
+
+    print(f"Markdown file generated: {output_path}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
