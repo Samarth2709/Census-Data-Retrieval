@@ -38,5 +38,6 @@
         "api_url": "https://api.census.gov/data/[year]/acs/acs5/profile?get=DP04_0134E&ucgid=1600000US1743250",
         "years": [2018, 2019, 2020]
       }
-    ]
+    ],
+    "location": "Libertyville, Illinois"
   }
