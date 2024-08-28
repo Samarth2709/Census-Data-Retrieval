@@ -12,10 +12,21 @@ logger = get_logger(__name__)
 
 class MarkdownFormatter:
     def __init__(self, data: Dict[str, Dict[int, List[Any]]]):
+        """
+        Initialize the MarkdownFormatter with census data.
+        
+        :param data: A nested dictionary containing census data organized by statistic and year.
+        """
         self.data = data
         logger.info("MarkdownFormatter initialized with data")
 
     def generate_markdown(self) -> str:
+        """
+        Generate the complete markdown content including table of contents,
+        list format, and table format representations of the census data.
+        
+        :return: A string containing the formatted markdown content.
+        """
         logger.info("Generating markdown content")
         try:
             markdown = "# Census Data Report\n\n"
@@ -29,6 +40,11 @@ class MarkdownFormatter:
             raise
 
     def _generate_toc(self) -> str:
+        """
+        Generate the table of contents for the markdown report.
+        
+        :return: A string containing the formatted table of contents.
+        """
         logger.debug("Generating table of contents")
         toc = "## Table of Contents\n\n"
         toc += "1. [List Format](#list-format)\n"
@@ -38,6 +54,12 @@ class MarkdownFormatter:
         return toc + "\n"
 
     def _generate_list_format(self) -> str:
+        """
+        Generate a list format representation of the census data.
+        
+        :return: A string containing the census data in list format.
+        """
+
         logger.debug("Generating list format")
         list_format = "## List Format\n\n"
         for statistic, years_data in self.data.items():
@@ -48,6 +70,11 @@ class MarkdownFormatter:
         return list_format
 
     def _generate_table_format(self) -> str:
+        """
+        Generate a table format representation of the census data.
+        
+        :return: A string containing the census data in table format.
+        """
         logger.debug("Generating table format")
         table_format = "## Table Format\n\n"
         for statistic, years_data in self.data.items():
@@ -60,6 +87,11 @@ class MarkdownFormatter:
         return table_format
     
     def save_markdown(self, filename: str):
+        """
+        Save the generated markdown content to a file.
+        
+        :param filename: The path and name of the file to save the markdown content.
+        """
         logger.info(f"Saving markdown to file: {filename}")
         try:
             # Create the directory if it doesn't exist
