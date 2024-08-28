@@ -49,8 +49,6 @@ class MarkdownFormatter:
         toc = "## Table of Contents\n\n"
         toc += "1. [List Format](#list-format)\n"
         toc += "2. [Table Format](#table-format)\n"
-        for statistic in self.data.keys():
-            toc += f"   - [{statistic}](###{statistic.lower().replace(' ', '-')})\n"
         return toc + "\n"
 
     def _generate_list_format(self, show_variable_key) -> str:
