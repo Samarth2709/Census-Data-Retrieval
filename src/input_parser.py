@@ -62,6 +62,15 @@ class InputParser:
         """Return the list of statistics."""
         logger.debug("Retrieving all statistics")
         return self.data['statistics']
+    
+    def get_location(self) -> str:
+        """Get the location argument of the config file."""
+        logger.debug("Retrieving location")
+        try:
+            return self.data['location']
+        except KeyError:
+            logger.warning("No location found in the input data")
+        return ""
 
     def get_statistic_by_name(self, name: str) -> Dict[str, Any]:
         """Return a specific statistic by its name."""
